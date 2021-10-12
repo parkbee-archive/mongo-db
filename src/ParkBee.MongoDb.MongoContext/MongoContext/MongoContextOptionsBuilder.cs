@@ -29,7 +29,10 @@ namespace ParkBee.MongoDb
         public async Task Configure(MongoContext context, Func<Task> configAction)
         {
             if (!IsConfigured)
+            {
                 await configAction.Invoke();
+                ConfigureClassMappers();
+            }
 
             //get collection properties in context
             var contextProperties = context.GetType().GetRuntimeProperties()
@@ -56,7 +59,6 @@ namespace ParkBee.MongoDb
                 context.GetType().GetProperty(propertyInfo.Name).SetValue(context, dbSet);
             }
 
-            MapIdMemberToKeys();
 
             IsConfigured = true;
         }
@@ -64,6 +66,12 @@ namespace ParkBee.MongoDb
         public MemberExpression GetFilterByKeyExpression<TEntity>() where TEntity : class
         {
             var builder = _entityToBuilderMap[typeof(TEntity)] as EntityTypeBuilder<TEntity>;
+            if (builder.KeyPropertyExpression == null)
+            {
+                throw new InvalidOperationException(
+                    $"You should configure ket property of {typeof(TEntity)} before using ByKeyOperations. This can be done by calling HasKey method of EntityBuilder inside OnConfiguring method of your context");
+            }
+
             return ((builder.KeyPropertyExpression as LambdaExpression).Body as UnaryExpression).Operand as
                 MemberExpression;
         }
@@ -97,14 +105,14 @@ namespace ParkBee.MongoDb
             return collection;
         }
 
-        private void MapIdMemberToKeys()
+        private void ConfigureClassMappers()
         {
             foreach (var map in _entityToBuilderMap)
             {
                 var builderType = typeof(EntityTypeBuilder<>).MakeGenericType(map.Key);
                 var builder = _entityToBuilderMap[map.Key];
 
-                builderType.InvokeMember("MapBsonIdToKey", BindingFlags.InvokeMethod |BindingFlags.Instance |  BindingFlags.NonPublic,
+                builderType.InvokeMember("ConfigureClassMappers", BindingFlags.InvokeMethod |BindingFlags.Instance |  BindingFlags.NonPublic,
                     Type.DefaultBinder, builder, null);
             }
         }
