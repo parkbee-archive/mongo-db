@@ -176,7 +176,7 @@ public class PermissionsContext : MongoContext
     }
 }
 ```
-Then when I add a PermissionGroup to the MongoDb using code:
+Then, when I add a PermissionGroup to the MongoDb using code:
 ```
 var permissionGroup = new PermissionGroup
 {

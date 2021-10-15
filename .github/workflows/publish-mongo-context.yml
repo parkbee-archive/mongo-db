@@ -1,4 +1,4 @@
-name: .NET
+name: Pack and publish MongoContext
 
 on:
   push:
