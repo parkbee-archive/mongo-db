@@ -3,16 +3,16 @@
     <PropertyGroup>
         <LangVersion>9</LangVersion>
         <TargetFrameworks>net5.0;netstandard2.0;netstandard2.1</TargetFrameworks>
-        <AssemblyName>ParkBee.MongoDb</AssemblyName>
+        <AssemblyName>ParkBee.MongoDb.MongoContext</AssemblyName>
         <RootNamespace>ParkBee.MongoDb</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>ParkBee.MongoDb</PackageId>
         <Authors>M. Haji</Authors>
         <Company>ParkBee</Company>
         <Product>MongoContext</Product>
-        <AssemblyVersion>1.1.0</AssemblyVersion>
-        <FileVersion>1.1.0</FileVersion>
-        <PackageVersion>1.1.1</PackageVersion>
+        <AssemblyVersion>1.1.2</AssemblyVersion>
+        <FileVersion>1.1.2</FileVersion>
+        <PackageVersion>1.1.2</PackageVersion>
         <RepositoryUrl>https://github.com/Parkbee/mongo-db</RepositoryUrl>
         <RepositoryType>public</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>

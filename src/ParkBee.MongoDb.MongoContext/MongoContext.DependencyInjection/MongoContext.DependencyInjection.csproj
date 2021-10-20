@@ -2,16 +2,16 @@
 
     <PropertyGroup>
         <TargetFrameworks>net5.0;netstandard2.0;netstandard2.1</TargetFrameworks>
-        <AssemblyName>ParkBee.MongoDb.DependencyInjection</AssemblyName>
-        <RootNamespace>ParkBee.MongoDb.DependencyInjection</RootNamespace>
+        <AssemblyName>ParkBee.MongoDb.MongoContext.DependencyInjection</AssemblyName>
+        <RootNamespace>ParkBee.MongoDb.MongoContext.DependencyInjection</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageId>ParkBee.MongoDb.DependencyInjection</PackageId>
         <Authors>M. Haji</Authors>
         <Company>ParkBee</Company>
         <Product>MongoContext.DependencyInjection</Product>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
-        <FileVersion>1.0.0</FileVersion>
+        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <FileVersion>1.0.1</FileVersion>
         <RepositoryUrl>https://github.com/Parkbee/mongo-db</RepositoryUrl>
         <RepositoryType>public</RepositoryType>
     </PropertyGroup>
