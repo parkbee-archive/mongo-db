@@ -10,8 +10,8 @@
         <Company>ParkBee</Company>
         <Product>MongoContext.DependencyInjection</Product>
         <AssemblyVersion>1.0.1</AssemblyVersion>
-        <AssemblyVersion>1.0.1</AssemblyVersion>
         <FileVersion>1.0.1</FileVersion>
+        <PackageVersion>1.0.1</PackageVersion>
         <RepositoryUrl>https://github.com/Parkbee/mongo-db</RepositoryUrl>
         <RepositoryType>public</RepositoryType>
     </PropertyGroup>
