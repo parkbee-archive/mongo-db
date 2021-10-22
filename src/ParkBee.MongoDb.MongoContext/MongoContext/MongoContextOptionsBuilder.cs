@@ -111,28 +111,27 @@ namespace ParkBee.MongoDb
 
         private void ConfigureMappers()
         {
-            foreach (var map in _entityToBuilderMap)
-            {
-                var builderType = typeof(EntityTypeBuilder<>).MakeGenericType(map.Key);
-                var builder = _entityToBuilderMap[map.Key];
-
-                builderType.InvokeMember("ConfigureMappers", BindingFlags.InvokeMethod |BindingFlags.Instance |  BindingFlags.NonPublic,
-                    Type.DefaultBinder, builder, null);
-            }
+            InvokeEntityBuildersMethod("ConfigureMappers");
         }
 
         private void ConfigureIndexes()
+        {
+            InvokeEntityBuildersMethod("ConfigureIndexes");
+        }
+
+        private void InvokeEntityBuildersMethod(string methodName)
         {
             foreach (var map in _entityToBuilderMap)
             {
                 var builderType = typeof(EntityTypeBuilder<>).MakeGenericType(map.Key);
                 var builder = _entityToBuilderMap[map.Key];
 
-                builderType.InvokeMember("ConfigureIndexes", BindingFlags.InvokeMethod |BindingFlags.Instance |  BindingFlags.NonPublic,
+                builderType.InvokeMember(methodName,
+                    BindingFlags.InvokeMethod | BindingFlags.Instance | BindingFlags.NonPublic,
                     Type.DefaultBinder, builder, null);
             }
         }
-        
+
         public EntityTypeBuilder<TEntity> Entity<TEntity>(
             Action<EntityTypeBuilder<TEntity>> buildAction)
             where TEntity : class
