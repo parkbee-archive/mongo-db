@@ -1,20 +1,22 @@
 using System.Threading.Tasks;
+using MongoDB.Driver;
 
 namespace ParkBee.MongoDb
 {
     public class MongoContext
     {
         protected readonly IMongoContextOptionsBuilder OptionsBuilder;
+        public IMongoDatabase Database => OptionsBuilder.Database;
 
         protected MongoContext(IMongoContextOptionsBuilder optionsBuilder)
         {
             OptionsBuilder = optionsBuilder;
-            Task.Run(() => optionsBuilder.Configure(this, this.OnConfiguring)).Wait();
+             optionsBuilder.Configure(this, this.OnConfiguring);
         }
 
-        protected virtual Task OnConfiguring()
+        protected virtual void OnConfiguring()
         {
-            return Task.CompletedTask;
+            
         }
     }
 }

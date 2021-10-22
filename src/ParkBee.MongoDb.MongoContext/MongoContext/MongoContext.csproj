@@ -10,16 +10,17 @@
         <Authors>M. Haji</Authors>
         <Company>ParkBee</Company>
         <Product>MongoContext</Product>
-        <AssemblyVersion>1.1.2</AssemblyVersion>
-        <FileVersion>1.1.2</FileVersion>
-        <PackageVersion>1.1.2</PackageVersion>
+        <AssemblyVersion>1.2.0</AssemblyVersion>
+        <Version>1.2.0</Version>
+        <FileVersion>1.2.0</FileVersion>
+        <PackageVersion>1.2.0</PackageVersion>
         <RepositoryUrl>https://github.com/Parkbee/mongo-db</RepositoryUrl>
         <RepositoryType>public</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
+      <PackageReference Include="MongoDB.Driver" Version="2.13.0" />
     </ItemGroup>
     <ItemGroup>
         <None Include="../../../README.md" Pack="true" PackagePath="\"/>

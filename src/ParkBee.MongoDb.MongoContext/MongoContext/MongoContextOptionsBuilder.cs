@@ -19,6 +19,8 @@ namespace ParkBee.MongoDb
             new Dictionary<Type, object>();
 
         private readonly IMongoDatabase _database;
+        public IMongoDatabase Database => _database;
+
 
         public MongoContextOptionsBuilder(IMongoDatabase database)
         {
@@ -26,12 +28,13 @@ namespace ParkBee.MongoDb
         }
 
 
-        public async Task Configure(MongoContext context, Func<Task> configAction)
+
+        public void Configure(MongoContext context, Action configAction)
         {
             if (!IsConfigured)
             {
-                await configAction.Invoke();
-                ConfigureClassMappers();
+                configAction.Invoke();
+                ConfigureMappers();
             }
 
             //get collection properties in context
@@ -59,6 +62,7 @@ namespace ParkBee.MongoDb
                 context.GetType().GetProperty(propertyInfo.Name).SetValue(context, dbSet);
             }
 
+            ConfigureIndexes();
 
             IsConfigured = true;
         }
@@ -82,19 +86,19 @@ namespace ParkBee.MongoDb
 
             var builder = _entityToBuilderMap.ContainsKey(propertyInfo.Type)
                 ? _entityToBuilderMap[propertyInfo.Type]
-                : Activator.CreateInstance(builderType, _database);
+                : Activator.CreateInstance(builderType, Database);
             var collectionProperty = builderType.GetProperty("Collection");
             var collection = collectionProperty.GetValue(_entityToBuilderMap[propertyInfo.Type]);
 
             if (collection == null)
             {
-                MethodInfo getCollectionMethod = _database.GetType().GetMethod("GetCollection") ??
+                MethodInfo getCollectionMethod = Database.GetType().GetMethod("GetCollection") ??
                                                  throw new InvalidOperationException(
                                                      "IMongoDatabase don't expose GetCollection method which is expected");
                 MethodInfo generic = getCollectionMethod.MakeGenericMethod(propertyInfo.Type);
 
                 collection =
-                    generic.Invoke(_database, new object?[] { propertyInfo.Name, null }) ??
+                    generic.Invoke(Database, new object?[] { propertyInfo.Name, null }) ??
                     throw new InvalidOperationException(
                         $"GetCollection<{propertyInfo.Type}>(\"{propertyInfo.Name}\") doesn't return a value");
 
@@ -105,27 +109,38 @@ namespace ParkBee.MongoDb
             return collection;
         }
 
-        private void ConfigureClassMappers()
+        private void ConfigureMappers()
         {
             foreach (var map in _entityToBuilderMap)
             {
                 var builderType = typeof(EntityTypeBuilder<>).MakeGenericType(map.Key);
                 var builder = _entityToBuilderMap[map.Key];
 
-                builderType.InvokeMember("ConfigureClassMappers", BindingFlags.InvokeMethod |BindingFlags.Instance |  BindingFlags.NonPublic,
+                builderType.InvokeMember("ConfigureMappers", BindingFlags.InvokeMethod |BindingFlags.Instance |  BindingFlags.NonPublic,
                     Type.DefaultBinder, builder, null);
             }
         }
 
+        private void ConfigureIndexes()
+        {
+            foreach (var map in _entityToBuilderMap)
+            {
+                var builderType = typeof(EntityTypeBuilder<>).MakeGenericType(map.Key);
+                var builder = _entityToBuilderMap[map.Key];
 
-        public async Task<EntityTypeBuilder<TEntity>> Entity<TEntity>(
-            Func<EntityTypeBuilder<TEntity>, Task> buildAction)
+                builderType.InvokeMember("ConfigureIndexes", BindingFlags.InvokeMethod |BindingFlags.Instance |  BindingFlags.NonPublic,
+                    Type.DefaultBinder, builder, null);
+            }
+        }
+        
+        public EntityTypeBuilder<TEntity> Entity<TEntity>(
+            Action<EntityTypeBuilder<TEntity>> buildAction)
             where TEntity : class
         {
             var builder = _entityToBuilderMap.ContainsKey(typeof(TEntity))
                 ? _entityToBuilderMap[typeof(TEntity)] as EntityTypeBuilder<TEntity>
-                : new EntityTypeBuilder<TEntity>(_database);
-            await buildAction.Invoke(builder);
+                : new EntityTypeBuilder<TEntity>(Database);
+            buildAction.Invoke(builder);
             _entityToBuilderMap[typeof(TEntity)] = builder;
             return builder;
         }
@@ -156,7 +171,7 @@ namespace ParkBee.MongoDb
                 var entityType = configInterface.GetGenericArguments().First();
                 var builder = _entityToBuilderMap.ContainsKey(entityType)
                     ? _entityToBuilderMap[entityType]
-                    : Activator.CreateInstance(typeof(EntityTypeBuilder<>).MakeGenericType(entityType), _database);
+                    : Activator.CreateInstance(typeof(EntityTypeBuilder<>).MakeGenericType(entityType), Database);
                 var configurationClass = Activator.CreateInstance(type);
 
                 configureMethod.Invoke(configurationClass, new[] { builder });

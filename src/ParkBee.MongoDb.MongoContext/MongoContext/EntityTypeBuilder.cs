@@ -17,6 +17,8 @@ namespace ParkBee.MongoDb
         private readonly List<Action<BsonClassMap<T>>> _referenceMappers=new();
         private Action<BsonClassMap<T>> _definedMapper;
 
+        private readonly List<Action<IMongoCollection<T>>> _createIndexActions = new();
+
         public EntityTypeBuilder(IMongoDatabase database)
         {
             _database = database;
@@ -45,8 +47,19 @@ namespace ParkBee.MongoDb
             };
             return this;
         }
+        
+        public EntityTypeBuilder<T> HasIndex(params CreateIndexModel<T>[] indexes)
+        {
+            _createIndexActions.Add((collection)=> collection.Indexes.CreateMany(indexes));
+            return this;
+        }
+        public EntityTypeBuilder<T> HasIndex(Func<IFilteredMongoCollection<T>> getCollectionAction,params CreateIndexModel<T>[] indexes)
+        {
+            _createIndexActions.Add((_)=> getCollectionAction.Invoke().Indexes.CreateMany(indexes));
+            return this;
+        }
 
-        internal void ConfigureClassMappers()
+        internal void ConfigureMappers()
         {
             if (BsonClassMap.IsClassMapRegistered(typeof(T)))
             {
@@ -64,6 +77,13 @@ namespace ParkBee.MongoDb
             }
         }
 
+        internal void ConfigureIndexes()
+        {
+            foreach (var createIndexAction in _createIndexActions)
+            {
+                createIndexAction.Invoke(Collection);
+            }
+        }
 
         public EntityTypeBuilder<T> HasReferenceTo<TReference>(Expression<Func<TReference, object>> referenceIdSelector,
             Expression<Func<T, IEnumerable<object>>> refPropertySelector) where TReference : class, new()

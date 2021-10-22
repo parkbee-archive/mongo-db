@@ -129,6 +129,19 @@ Delete a single document by it's key e.g.
 ```
 var user = await _context.Users.DeleteByKey("userid");
 ```
+### HasIndex
+This method can be used to define indexes:
+```
+var searchByIdentifier = new CreateIndexModel<User>(Builders<User>.IndexKeys
+                    .Ascending(x => x.ContactDetails.Email)
+                    .Ascending(x => x.ContactDetails.PhoneNumber));
+            
+var searchByUserId = new CreateIndexModel<User>(Builders<User>.IndexKeys
+    .Ascending(x => x.UserId));
+
+b.HasIndex(searchByIdentifier, searchByUserId);
+```
+
 ### HasReferenceTo
 This feature is intended to automate the reference functionality of MongoDb.Driver which should be done manually at the moment. by using this method you will have reference between collections.
 > Referencing between collections is not a common use case, so please be cautious about using it widely
