@@ -10,10 +10,10 @@
         <Authors>M. Haji</Authors>
         <Company>ParkBee</Company>
         <Product>MongoContext</Product>
-        <AssemblyVersion>1.2.1</AssemblyVersion>
-        <Version>1.2.1</Version>
-        <FileVersion>1.2.1</FileVersion>
-        <PackageVersion>1.2.1</PackageVersion>
+        <AssemblyVersion>1.2.2</AssemblyVersion>
+        <Version>1.2.2</Version>
+        <FileVersion>1.2.2</FileVersion>
+        <PackageVersion>1.2.2</PackageVersion>
         <RepositoryUrl>https://github.com/Parkbee/mongo-db</RepositoryUrl>
         <RepositoryType>public</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>

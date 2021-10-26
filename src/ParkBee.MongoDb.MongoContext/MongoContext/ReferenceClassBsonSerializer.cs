@@ -20,9 +20,10 @@ namespace ParkBee.MongoDb
         public ReferenceClassBsonSerializer(Type type, Expression<Func<T, object>> idExpression)
         {
             _type = type;
-            _idExpression = (idExpression.Body is UnaryExpression unaryExpression?unaryExpression.Operand: idExpression.Body) as MemberExpression;
+            _idExpression =
+                (idExpression.Body is UnaryExpression unaryExpression ? unaryExpression.Operand : idExpression.Body) as
+                MemberExpression;
         }
-
 
         object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
         {
@@ -41,8 +42,6 @@ namespace ParkBee.MongoDb
 
                 BsonSerializer.Serialize(context.Writer, ids);
             }
-
-
         }
 
         public IEnumerable<T> Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
@@ -53,16 +52,16 @@ namespace ParkBee.MongoDb
             var enumerableType = typeof(IEnumerable<>).MakeGenericType(idProperty.PropertyType);
 
             var deserializeMethod =
-                typeof(BsonSerializer).GetMethod(nameof(BsonSerializer.Deserialize), new []{typeof(IBsonReader),typeof(Action<BsonDeserializationContext.Builder>)} );
+                typeof(BsonSerializer).GetMethod(nameof(BsonSerializer.Deserialize),
+                    new[] { typeof(IBsonReader), typeof(Action<BsonDeserializationContext.Builder>) });
             var bookmark = context.Reader.GetBookmark();
             try
             {
-                
                 var genericMethod = deserializeMethod.MakeGenericMethod(enumerableType);
-               var ids = genericMethod.Invoke(null, new object[] { context.Reader, null }) as IEnumerable<object>;
+                var ids = genericMethod.Invoke(null, new object[] { context.Reader, null }) as IEnumerable<object>;
                 if (ids == null)
                     return null;
-            
+
                 return ids.Select(e =>
                 {
                     var emptyObject = new T();
@@ -70,13 +69,13 @@ namespace ParkBee.MongoDb
                     return emptyObject;
                 }).ToList();
             }
-            catch (TargetInvocationException e) when(e.InnerException is FormatException)
+            catch (TargetInvocationException e) when (e.InnerException is FormatException)
             {
                 context.Reader.ReturnToBookmark(bookmark);
                 var genericMethod = deserializeMethod.MakeGenericMethod(args.NominalType);
-               return genericMethod.Invoke(null, new object[] { context.Reader, null }) as IEnumerable<T>;
+                return genericMethod.Invoke(null, new object[] { context.Reader, null }) as IEnumerable<T>;
             }
-            
+
         }
 
         public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
