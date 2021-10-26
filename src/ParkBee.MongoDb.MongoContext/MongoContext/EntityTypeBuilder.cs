@@ -14,7 +14,7 @@ namespace ParkBee.MongoDb
         public IMongoCollection<T> Collection { get; private set; }
         public Expression<Func<T, object>> KeyPropertyExpression { get; private set; }
         private Action<BsonClassMap<T>> _keyMapper;
-        private readonly List<Action<BsonClassMap<T>>> _referenceMappers=new();
+        private readonly List<Action<BsonClassMap<T>>> _referenceMappers = new();
         private Action<BsonClassMap<T>> _definedMapper;
 
         private readonly List<Action<IMongoCollection<T>>> _createIndexActions = new();
@@ -47,15 +47,17 @@ namespace ParkBee.MongoDb
             };
             return this;
         }
-        
+
         public EntityTypeBuilder<T> HasIndex(params CreateIndexModel<T>[] indexes)
         {
-            _createIndexActions.Add((collection)=> collection.Indexes.CreateMany(indexes));
+            _createIndexActions.Add((collection) => collection.Indexes.CreateMany(indexes));
             return this;
         }
-        public EntityTypeBuilder<T> HasIndex(Func<IFilteredMongoCollection<T>> getCollectionAction,params CreateIndexModel<T>[] indexes)
+
+        public EntityTypeBuilder<T> HasIndex(Func<IFilteredMongoCollection<T>> getCollectionAction,
+            params CreateIndexModel<T>[] indexes)
         {
-            _createIndexActions.Add((_)=> getCollectionAction.Invoke().Indexes.CreateMany(indexes));
+            _createIndexActions.Add((_) => getCollectionAction.Invoke().Indexes.CreateMany(indexes));
             return this;
         }
 
@@ -71,7 +73,7 @@ namespace ParkBee.MongoDb
                 BsonClassMap.RegisterClassMap<T>(cm =>
                 {
                     _keyMapper?.Invoke(cm);
-                    _referenceMappers?.ForEach(rm=>rm.Invoke(cm));
+                    _referenceMappers?.ForEach(rm => rm.Invoke(cm));
                     _definedMapper?.Invoke(cm);
                 });
             }
@@ -89,12 +91,28 @@ namespace ParkBee.MongoDb
             Expression<Func<T, IEnumerable<object>>> refPropertySelector) where TReference : class, new()
         {
             var referencePropertyInfo = (refPropertySelector.Body as MemberExpression).Member as PropertyInfo;
-            _referenceMappers.Add( cm =>
+            _referenceMappers.Add(cm =>
             {
                 cm.AutoMap();
                 cm.MapProperty(refPropertySelector)
                     .SetSerializer(new ReferenceClassBsonSerializer<TReference>(referencePropertyInfo.PropertyType,
                         referenceIdSelector));
+            });
+            return this;
+        }
+
+        public EntityTypeBuilder<T> HasReferenceTo<TReference>(Expression<Func<TReference, object>> referenceIdSelector,
+            Expression<Func<T, IEnumerable<object>>> refPropertySelector, string referenceFieldName, Type referenceFieldType)
+            where TReference : class, new()
+        {
+            var referencePropertyInfo = (refPropertySelector.Body as MemberExpression).Member as PropertyInfo;
+            _referenceMappers.Add(cm =>
+            {
+                cm.AutoMap();
+                cm.MapField(referenceFieldName)
+                    .SetElementName(referencePropertyInfo.Name)
+                    .SetSerializer(new ReferenceClassBsonSerializer<TReference>(referenceFieldType, referenceIdSelector));
+                cm.UnmapProperty(refPropertySelector);
             });
             return this;
         }

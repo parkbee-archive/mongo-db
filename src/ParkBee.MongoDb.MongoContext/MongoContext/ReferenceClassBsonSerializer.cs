@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 
@@ -52,18 +54,29 @@ namespace ParkBee.MongoDb
 
             var deserializeMethod =
                 typeof(BsonSerializer).GetMethod(nameof(BsonSerializer.Deserialize), new []{typeof(IBsonReader),typeof(Action<BsonDeserializationContext.Builder>)} );
-            var genericMethod = deserializeMethod.MakeGenericMethod(enumerableType);
-
-            var ids = genericMethod.Invoke(null, new object[] { context.Reader, null }) as IEnumerable<object>;
-            if (ids == null)
-                return null;
-            
-            return ids.Select(e =>
+            var bookmark = context.Reader.GetBookmark();
+            try
             {
-                var emptyObject = new T();
-                idProperty.SetValue(emptyObject, e);
-                return emptyObject;
-            }).ToList();
+                
+                var genericMethod = deserializeMethod.MakeGenericMethod(enumerableType);
+               var ids = genericMethod.Invoke(null, new object[] { context.Reader, null }) as IEnumerable<object>;
+                if (ids == null)
+                    return null;
+            
+                return ids.Select(e =>
+                {
+                    var emptyObject = new T();
+                    idProperty.SetValue(emptyObject, e);
+                    return emptyObject;
+                }).ToList();
+            }
+            catch (TargetInvocationException e) when(e.InnerException is FormatException)
+            {
+                context.Reader.ReturnToBookmark(bookmark);
+                var genericMethod = deserializeMethod.MakeGenericMethod(args.NominalType);
+               return genericMethod.Invoke(null, new object[] { context.Reader, null }) as IEnumerable<T>;
+            }
+            
         }
 
         public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)

@@ -13,21 +13,18 @@ namespace ParkBee.MongoDb
     public class MongoContextOptionsBuilder : IMongoContextOptionsBuilder
     {
         private bool IsConfigured { get; set; }
-
-
+        
         private readonly IDictionary<Type, object> _entityToBuilderMap =
             new Dictionary<Type, object>();
 
         private readonly IMongoDatabase _database;
+        
         public IMongoDatabase Database => _database;
-
 
         public MongoContextOptionsBuilder(IMongoDatabase database)
         {
             _database = database;
         }
-
-
 
         public void Configure(MongoContext context, Action configAction)
         {
